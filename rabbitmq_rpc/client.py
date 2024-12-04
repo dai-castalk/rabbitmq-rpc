@@ -308,7 +308,7 @@ class RPCClient:
             raise ConnectionError("RPCClient is not connected")
         try:
             await with_retry_and_timeout(
-                self._subscribe(queue_name, handler, durable, **kwargs),
+                self._subscribe(exchange_name, queue_name, handler, exchange_type, durable, **kwargs),
                 timeout,
                 retry_count,
             )
