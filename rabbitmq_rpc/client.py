@@ -333,7 +333,7 @@ class RPCClient:
             )
             queue = await channel.declare_queue(queue_name, durable=durable, **kwargs)
 
-            await queue.bind(exchange, event)
+            await queue.bind(exchange, queue_name)
             await queue.consume(handler)
             self.logger.info(f"Subscribed to queue {queue_name}")
         except (exceptions.AMQPError, ValueError) as e:
