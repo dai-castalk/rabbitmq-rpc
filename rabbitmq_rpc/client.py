@@ -293,10 +293,12 @@ class RPCClient:
             raise EventPublishError(f"Failed to publish event to exchange {exchange_name}: {str(e)}")
 
     async def subscribe_event(
-        self, 
+        self,
+        exchange_name: str,
         queue_name: str, 
-        handler: Callable[..., Any], 
-        durable: bool = True, 
+        handler: Callable[..., Any],
+        exchange_type: ExchangeType = ExchangeType.TOPIC,
+        durable: bool = True,
         timeout: Optional[float] = None, 
         retry_count: int = 3, 
         **kwargs: Any,
@@ -315,16 +317,23 @@ class RPCClient:
             raise EventSubscribeError(f"Failed to subscribe to queue {queue_name}: {str(e)}")
 
     async def _subscribe(
-        self, 
+        self,
+        exchange_name: str,
         queue_name: str, 
-        handler: Callable[..., Any], 
+        handler: Callable[..., Any],
+        exchange_type: ExchangeType,
         durable: bool, 
         **kwargs: Any,
     ) -> None:
         """Helper function to subscribe to a queue."""
         try:
             channel = await self.connection.channel()
+            exchange = await channel.declare_exchange(
+                exchange_name, type=exchange_type, durable=True
+            )
             queue = await channel.declare_queue(queue_name, durable=durable, **kwargs)
+
+            await queue.bind(exchange, event)
             await queue.consume(handler)
             self.logger.info(f"Subscribed to queue {queue_name}")
         except (exceptions.AMQPError, ValueError) as e:
