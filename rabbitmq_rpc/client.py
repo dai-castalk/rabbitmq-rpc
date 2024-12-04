@@ -345,7 +345,7 @@ class RPCClient:
             channel = await self.connection.channel()
             exchange = await channel.declare_exchange(
                 exchange_name, 
-                exchange_type=exchange_type,
+                type=exchange_type,
                 durable=durable,
             )
             await exchange.publish(
